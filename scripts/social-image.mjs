@@ -1,0 +1,3 @@
+import sharp from "sharp";
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#173c36"/><path d="M70 130h1060M70 530h1060" stroke="#547165"/><text x="70" y="93" fill="#f6f4ee" font-family="Georgia" font-size="37">Lemos Morales.</text><g fill="#f6f4ee" font-family="Georgia" font-size="72"><text x="70" y="285">Una administración presente.</text><text x="70" y="385" fill="#c8b99a">Un consorcio tranquilo.</text></g><text x="70" y="578" fill="#f6f4ee" font-family="Arial" font-size="20" letter-spacing="4">ADMINISTRACIÓN DE CONSORCIOS</text></svg>`;
+await sharp(Buffer.from(svg)).png().toFile("public/social.png");

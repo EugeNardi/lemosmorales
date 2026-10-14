@@ -1,0 +1,65 @@
+{
+  "sizes": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "scrollWidth": 360,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false
+    }
+  ],
+  "interactions": [
+    "Client validation, property selection with data preservation, absent SMTP configuration and retry",
+    "Browser-only provider failure/success fixtures; data preservation and double-submit lock",
+    "FAQ opens with click and closes with keyboard",
+    "Mobile menu, Escape focus return, anchor navigation"
+  ],
+  "accessibility": [
+    {
+      "viewport": "desktop",
+      "violations": []
+    },
+    {
+      "viewport": "mobile",
+      "violations": []
+    }
+  ],
+  "metadata": {
+    "lang": "es-AR",
+    "h1Count": 1,
+    "title": "Lemos Morales | Administración de consorcios",
+    "robots": "noindex, nofollow"
+  },
+  "zoomEquivalent": {
+    "layoutWidth": 720,
+    "overflow": false,
+    "note": "Reflow equivalent to 1440px at 200%; not browser chrome zoom"
+  },
+  "reducedMotion": {
+    "heroAnimation": "none",
+    "activeAnimations": 0
+  }
+}

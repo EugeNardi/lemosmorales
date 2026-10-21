@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Unauthenticated inbox redirects; wrong password rejected",
+    "Real local form submission persisted and visible only after login",
+    "Status, notes, search, mobile and deletion of the test inquiry verified",
+    "Logout revokes browser access"
+  ],
+  "accessibility": [
+    {
+      "screen": "inbox",
+      "violations": []
+    },
+    {
+      "screen": "login",
+      "violations": []
+    }
+  ],
+  "runtimeErrors": []
+}

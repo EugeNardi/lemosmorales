@@ -172,7 +172,8 @@ export function ContactForm({ enabled }: { enabled: boolean }) {
         <small>
           Los campos sin “opcional” son obligatorios.
           <br />
-          Usaremos tus datos para responder esta consulta.
+          Usaremos tus datos para responder esta consulta. Los conservamos para
+          gestionar su seguimiento.
         </small>
         <button className="button" disabled={busy} type="submit">
           {busy ? "Enviando…" : "Enviar consulta"}

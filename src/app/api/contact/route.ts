@@ -1,6 +1,12 @@
 import { validate } from "@/lib/validation";
 import { createMailTransport, deliver, mailConfigured } from "@/lib/mail";
 import { allowRequest } from "@/lib/rate-limit";
+import {
+  storageConfigured,
+  saveInquiry,
+  setNotification,
+  consumeLimit,
+} from "@/lib/crm/store";
 export const runtime = "nodejs";
 const reply = (message: string, status: number, extra = {}) =>
   Response.json(
@@ -72,11 +78,49 @@ export async function POST(request: Request) {
       ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
         "unknown"
       : "single-instance";
-  if (!allowRequest(identity))
+  let allowed: boolean;
+  try {
+    allowed = storageConfigured()
+      ? await consumeLimit(`contact:${identity}`)
+      : allowRequest(identity);
+  } catch {
+    return reply(
+      "No pudimos registrar tu consulta. Podés escribirnos por email o WhatsApp.",
+      503,
+    );
+  }
+  if (!allowed)
     return reply(
       "Recibimos varios intentos. Esperá unos minutos antes de volver a enviar.",
       429,
     );
+  if (storageConfigured()) {
+    let id: string;
+    try {
+      id = await saveInquiry(data);
+    } catch {
+      return reply(
+        "No pudimos registrar tu consulta. Conservamos los datos para que puedas reintentar.",
+        503,
+      );
+    }
+    // A notification failure must not ask the visitor to submit an accepted inquiry again.
+    if (mailConfigured()) {
+      let notification: "sent" | "failed" = "failed";
+      try {
+        await deliver(data, createMailTransport());
+        notification = "sent";
+      } catch {
+        /* Persisted in CRM. */
+      }
+      try {
+        await setNotification(id, notification);
+      } catch {
+        /* Do not duplicate an accepted inquiry. */
+      }
+    }
+    return reply("Recibimos tu consulta. Gracias por escribirnos.", 200);
+  }
   if (!mailConfigured())
     return reply(
       "El envío de consultas todavía no está habilitado. Tus datos no fueron enviados.",

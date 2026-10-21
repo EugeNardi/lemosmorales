@@ -1,5 +1,17 @@
 # Verificación de la entrega
 
+## Actualización de contacto y CRM — 21 de octubre de 2026
+
+- Teléfono, WhatsApp con ícono y correo público confirmados incorporados en contacto y pie de página.
+- Imagen generada con imagegen, optimizada a WebP, con leyenda de escena ilustrativa y prompt en ASSETS.md.
+- CRM local verificado de extremo a extremo: acceso con contraseña, rechazo de credenciales erróneas, bloqueo sin sesión, recepción real del formulario en SQLite, estado, notas, búsqueda, vista móvil, eliminación de la consulta ficticia y cierre de sesión.
+- Seis pruebas automatizadas de servidor aprobadas; lint y build de producción aprobados. La prueba de persistencia cierra y vuelve a abrir la base para verificar que los datos no dependan de memoria.
+- Axe sin infracciones detectadas en la landing (desktop/móvil) y en acceso/bandeja del CRM. Sin desbordamientos de la landing a 320–1440 px; CRM verificado a 390 px.
+- Credenciales locales guardadas solo como hash scrypt y secreto aleatorio en `.env.local`, excluido de Git. Base `.data/` y datos locales excluidos del despliegue.
+- No se enviaron correos reales. Gmail necesita una contraseña de aplicación y Vercel necesita PostgreSQL (`DATABASE_URL`) y las variables privadas del CRM. No se verificó PostgreSQL remoto sin credenciales. Ver CRM.md.
+
+Las verificaciones anteriores documentan las entregas previas; esta actualización reemplaza su descripción de la página sin imágenes y del formulario exclusivamente SMTP.
+
 Entorno: Windows, Node 24.13.0, Next 16.4.0. Revisión de navegador sobre la vista previa local con Chromium 1243 / Playwright. No se enviaron correos externos ni se publicó el sitio.
 
 Actualización visual: se retiraron las fotografías y se recompuso el hero y Nosotros con tipografía y líneas. Se añadieron entradas de 500–550 ms y transiciones de 200–250 ms. Se verificó ausencia de imágenes en el contenido y que, con movimiento reducido, no haya animaciones activas. Capturas e informe actualizados en `artifacts/`.

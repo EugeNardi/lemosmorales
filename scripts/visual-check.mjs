@@ -13,8 +13,8 @@ const report = { sizes: [], interactions: [], accessibility: [] };
 await page.goto("http://127.0.0.1:3000");
 await page.waitForLoadState("networkidle");
 await page.evaluate(() => document.fonts.ready);
-if (await page.locator("main img").count())
-  throw new Error("Photographs remain on page");
+if ((await page.locator("main img").count()) !== 1)
+  throw new Error("Professional work image missing");
 report.metadata = await page.evaluate(() => ({
   lang: document.documentElement.lang,
   h1Count: document.querySelectorAll("h1").length,
@@ -98,11 +98,21 @@ if (
   "Prueba de revisión"
 )
   throw new Error("Data lost");
+await page.route("**/api/contact", (route) =>
+  route.fulfill({
+    status: 503,
+    contentType: "application/json",
+    body: JSON.stringify({
+      message: "El envío todavía no está habilitado en esta prueba.",
+    }),
+  }),
+);
 await page.getByRole("button", { name: "Enviar consulta" }).click();
 await page
   .getByRole("status")
   .filter({ hasText: "todavía no está habilitado" })
   .waitFor();
+await page.unroute("**/api/contact");
 if (
   (await page.getByLabel("Mensaje", { exact: true }).inputValue()) !==
   "Consulta de prueba local."

@@ -1,5 +1,7 @@
 import { content, company, navigation } from "@/content/site";
-import { Arrow, Brand } from "./brand";
+import { Arrow, Brand, WhatsAppIcon } from "./brand";
+import Image from "next/image";
+import Link from "next/link";
 import { ContactForm, PropertyLink } from "./contact-form";
 export function Hero() {
   return (
@@ -33,6 +35,32 @@ export function Hero() {
           Descubrí nuestra forma de trabajar <span aria-hidden="true">↓</span>
         </a>
       </div>
+    </section>
+  );
+}
+export function WorkScene() {
+  return (
+    <section
+      className="container work-scene"
+      aria-label="Una mirada profesional en cada detalle"
+    >
+      <figure>
+        <div className="work-scene-image">
+          <Image
+            src="/images/mesa-profesional.webp"
+            width={1536}
+            height={1024}
+            alt="Mesa de trabajo con documentación, calculadora y profesionales revisando información"
+            sizes="(max-width: 767px) 100vw, 1240px"
+          />
+        </div>
+        <figcaption>
+          <span>
+            Una mirada profesional.<em>Atención en cada detalle.</em>
+          </span>
+          <small>Escena ilustrativa generada con IA.</small>
+        </figcaption>
+      </figure>
     </section>
   );
 }
@@ -199,8 +227,10 @@ export function Contact({ enabled }: { enabled: boolean }) {
             <a
               className="text-link"
               href={`https://wa.me/${company.whatsappNumber}?text=${encodeURIComponent("Hola, quisiera consultar por la administración de un consorcio.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              Escribinos por WhatsApp
+              <WhatsAppIcon /> Escribinos por WhatsApp <Arrow diagonal />
             </a>
           )}
           {company.address && <p>{company.address}</p>}
@@ -223,6 +253,27 @@ export function Footer() {
             Tranquilidad en tu consorcio.
           </p>
           <nav aria-label="Pie de página">
+            {company.contactEmail && (
+              <a
+                className="footer-email"
+                href={`mailto:${company.contactEmail}`}
+              >
+                {company.contactEmail}
+              </a>
+            )}
+            {company.phoneE164 && (
+              <a href={`tel:${company.phoneE164}`}>{company.phoneDisplay}</a>
+            )}
+            {company.whatsappNumber && (
+              <a
+                className="footer-whatsapp"
+                href={`https://wa.me/${company.whatsappNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <WhatsAppIcon /> WhatsApp
+              </a>
+            )}
             {navigation.map((item) => (
               <a key={item.href} href={item.href}>
                 {item.label}
@@ -240,7 +291,10 @@ export function Footer() {
             © {new Date().getFullYear()} {company.companyName}. Todos los
             derechos reservados.
           </span>
-          <a href="#inicio">Volver al inicio ↑</a>
+          <div className="footer-utility">
+            <Link href="/crm">Acceso al equipo</Link>
+            <a href="#inicio">Volver al inicio ↑</a>
+          </div>
         </div>
       </div>
     </footer>

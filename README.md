@@ -1,10 +1,10 @@
 # Lemos Morales
 
-Landing institucional completa para administración de consorcios. Next.js App Router, TypeScript, Tailwind CSS, fuentes locales y SMTP con Nodemailer. Contenido renderizado en servidor; menú y formulario son componentes cliente. No incluye bases de datos ni rastreadores.
+Landing institucional y CRM privado para administración de consorcios. Next.js App Router, TypeScript, Tailwind CSS, fuentes locales y SMTP con Nodemailer. El CRM recibe consultas, permite buscarlas, gestionar estados y registrar notas. SQLite local y PostgreSQL en Vercel. No incluye rastreadores. Ver [CRM.md](CRM.md) para la configuración del acceso y almacenamiento.
 
 ## Ejecutar
 
-Requiere Node.js ≥ 20.9 (verificado con 24.13.0) y npm.
+Requiere Node.js 24.x (verificado con 24.13.0) y npm.
 
 ```sh
 npm ci
@@ -32,11 +32,11 @@ La marca es una firma tipográfica provisional reemplazable en `src/components/b
 
 Copiar `.env.example` a `.env.local` y completar `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `CONTACT_FROM` y `CONTACT_TO`. Ninguna credencial debe llevar el prefijo `NEXT_PUBLIC_`. En producción, cargar estos valores como secretos del servidor. `CONTACT_FROM` debe pertenecer a un remitente autorizado por el proveedor. El visitante es `replyTo`; el destinatario se toma exclusivamente de la configuración del servidor.
 
-Sin estos valores la interfaz indica que el envío todavía no está habilitado y el endpoint devuelve 503. El formulario valida y permite comprobar la interacción, pero no simula éxito. Los datos se conservan ante errores; no se persisten en el navegador ni se registran en logs. Solo una aceptación SMTP produce respuesta 200. La aceptación no garantiza entrega en la bandeja de entrada.
+Con el CRM configurado, el formulario guarda primero la consulta en la base de datos: solo responde 200 una vez guardada. Si SMTP también está configurado, envía una notificación y registra su estado en el CRM. Si falla el email, el mensaje permanece guardado y no se pide volver a enviarlo. Sin CRM se conserva el modo SMTP directo, con éxito únicamente cuando el proveedor acepta el correo. Sin ninguno de los dos canales, se muestra el aviso de envío deshabilitado y se devuelve 503. No se registran mensajes en logs ni se guardan en el navegador.
 
 Cliente y servidor validan campos y límites. El endpoint acepta un máximo de 14 KB, email de hasta 254 caracteres y mensaje de hasta 4000. Incluye honeypot, tiempo mínimo de dos segundos, control de origen y bloqueo de doble envío en cliente. El correo usa texto plano, por lo que no interpreta HTML del visitante.
 
-El límite es de cinco intentos cada diez minutos. La implementación en memoria está pensada para **un proceso Node persistente**. Con `TRUST_PROXY=false`, usa un límite global conservador. Para producción detrás de un proxy que sobrescriba y sanee `X-Forwarded-For`, activar `TRUST_PROXY=true` para limitar por IP; verificar esa configuración en el hosting elegido. Se almacenan temporalmente hashes, no IP en claro ni contenido del formulario. Si se despliega con múltiples instancias o serverless, configurar un límite en el proxy/WAF antes de habilitar consultas: el contador en memoria no se comparte entre instancias y se reinicia con el proceso. No exponer directamente el servidor confiando en cabeceras manipulables.
+El límite de contacto es de cinco intentos cada diez minutos. Con CRM, los contadores se guardan en la base y se comparten entre Functions; sin CRM son locales a cada proceso. El acceso privado admite ocho intentos cada quince minutos. `TRUST_PROXY=false` usa un límite global conservador; activar `true` solo detrás de un proxy que sobrescriba y sanee `X-Forwarded-For`. Se guardan hashes temporales, no IP en claro. En modo SMTP sin CRM y con múltiples instancias, agregar un límite en el firewall.
 
 `npm test` levanta un servidor SMTP efímero en loopback y usa dominios `.test`: prueba aceptación y rechazo, incluido el endpoint, sin enviar correos reales. No existe un modo de éxito ficticio en la landing. Para verificar el canal real, configurar el proveedor y autorizar por separado una consulta de prueba, comprobando recepción, Reply-To, SPF/DKIM y carpeta de spam.
 
@@ -49,7 +49,7 @@ El límite es de cinco intentos cada diez minutos. La implementación en memoria
 5. Ejecutar comprobaciones, generar `npm run build` y desplegar en un entorno Node que permita conexiones SMTP. No usar exportación estática: el endpoint requiere servidor. Configurar HTTPS y rate limit del proxy según el entorno anterior.
 6. Reiniciar y reconstruir después de cambiar dominio o indexación; volver a verificar formulario y metadatos.
 
-Esta versión puede publicarse para revisión, pero no está lista para recibir consultas hasta configurar y verificar el correo.
+Esta versión puede publicarse para revisión. La recepción online en el CRM requiere conectar PostgreSQL; las notificaciones por correo requieren además configurar SMTP.
 
 ### Vercel desde GitHub
 
@@ -57,11 +57,11 @@ El repositorio está preparado para importarse desde `EugeNardi/lemosmorales`. E
 
 Para la primera revisión no se requieren credenciales SMTP ni variables de entorno: se verá el aviso de envío deshabilitado y se mantendrá `noindex`. Después del primer despliegue, usar la URL asignada por Vercel en `NEXT_PUBLIC_SITE_URL` y volver a desplegar. Mantener `SITE_INDEXABLE=false` hasta aprobar la publicación definitiva.
 
-Para habilitar consultas, cargar las variables SMTP como secretos del proyecto en Vercel, configurar un límite de frecuencia en su firewall (el contador en memoria no se comparte entre Functions) y verificar el canal. No copiar `.env.local` a GitHub. Los siguientes pushes a `main` se desplegarán automáticamente una vez conectado el repositorio con Vercel.
+Para habilitar el CRM, cargar `DATABASE_URL`, `CRM_ADMIN_EMAIL`, `CRM_PASSWORD_HASH` y `CRM_SESSION_SECRET` en las variables del servidor de Vercel. Para recibir también notificaciones, completar SMTP. Ver [CRM.md](CRM.md). No copiar `.env.local` a GitHub. Los siguientes pushes a `main` se desplegarán automáticamente una vez conectado el repositorio con Vercel.
 
 ## Diseño y revisión
 
-Composición editorial sin fotografías, en marfil y verde profundo. Inicio tipográfico protagonista, marcos lineales, filas numeradas, sección institucional a dos columnas y bloque oscuro. Incluye entrada suave del título, apariciones de secciones al entrar en pantalla y microinteracciones en botones, enlaces y campos. Todo el contenido se muestra sin JavaScript; las animaciones respetan `prefers-reduced-motion` y se cancelan si cambia esa preferencia. La actividad inmobiliaria queda en segundo plano; su enlace selecciona el motivo sin borrar lo escrito.
+Composición editorial en marfil y verde profundo con una imagen ilustrativa de una mesa de trabajo contable y legal. Inicio tipográfico protagonista, marcos lineales, filas numeradas y bloque oscuro. Las animaciones respetan `prefers-reduced-motion`; el contenido se muestra sin JavaScript. La actividad inmobiliaria queda en segundo plano; su enlace selecciona el motivo sin borrar lo escrito.
 
 Las capturas y el informe de navegador se guardan en `artifacts/`. El navegador integrado no pudo iniciarse por un error del entorno; se usó Chromium local mediante Playwright. Para repetir la revisión con el servidor iniciado:
 
@@ -77,8 +77,8 @@ No se midió un puntaje Lighthouse ni métricas de campo. La auditoría inicial 
 ## Pendiente para publicar
 
 - Confirmación o reemplazo del logo provisional.
-- Email y teléfono públicos; WhatsApp, dirección y redes únicamente si se desean y están confirmados.
+- Email, teléfono y WhatsApp confirmados y cargados. Dirección y redes solo si se aportan.
 - Cobertura geográfica real.
 - Dominio final.
 - Credenciales SMTP, remitente y destinatario, más verificación autorizada del canal.
-- Confirmación del hosting y su proxy/límite de frecuencia.
+- PostgreSQL y variables privadas del CRM en Vercel; revisar su proxy/límite de frecuencia.

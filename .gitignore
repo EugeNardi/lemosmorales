@@ -6,3 +6,5 @@ node_modules/
 coverage/
 .vercel/
 *.log
+.data/
+*.sqlite*

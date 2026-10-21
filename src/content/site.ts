@@ -12,10 +12,10 @@ type Company = {
 };
 export const company: Company = {
   companyName: "Lemos Morales",
-  contactEmail: null,
-  phoneDisplay: null,
-  phoneE164: null,
-  whatsappNumber: null,
+  contactEmail: "lemosmoralesadministracion@gmail.com",
+  phoneDisplay: "+54 9 351 515-4142",
+  phoneE164: "+5493515154142",
+  whatsappNumber: "5493515154142",
   address: null,
   serviceArea: null,
   clientPortalUrl: null,

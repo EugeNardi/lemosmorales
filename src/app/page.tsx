@@ -9,10 +9,12 @@ import {
   Faq,
   Contact,
   Footer,
+  WorkScene,
 } from "@/components/sections";
 import { mailConfigured } from "@/lib/mail";
 import { company } from "@/content/site";
 import { MotionEnhancements } from "@/components/motion";
+import { storageConfigured } from "@/lib/crm/store";
 export const dynamic = "force-dynamic";
 export default function Home() {
   return (
@@ -26,6 +28,7 @@ export default function Home() {
             name: company.companyName,
             ...(company.siteUrl ? { url: company.siteUrl } : {}),
             ...(company.contactEmail ? { email: company.contactEmail } : {}),
+            ...(company.phoneE164 ? { telephone: company.phoneE164 } : {}),
           }).replace(/</g, "\\u003c"),
         }}
       />
@@ -34,13 +37,14 @@ export default function Home() {
       <MotionEnhancements />
       <main id="contenido">
         <Hero />
+        <WorkScene />
         <Management />
         <About />
         <Process />
         <Support />
         <Property />
         <Faq />
-        <Contact enabled={mailConfigured()} />
+        <Contact enabled={mailConfigured() || storageConfigured()} />
       </main>
       <Footer />
     </>

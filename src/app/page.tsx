@@ -15,6 +15,7 @@ import { mailConfigured } from "@/lib/mail";
 import { company } from "@/content/site";
 import { MotionEnhancements } from "@/components/motion";
 import { storageConfigured } from "@/lib/crm/store";
+import { WhatsAppFloat } from "@/components/whatsapp-float";
 export const dynamic = "force-dynamic";
 export default function Home() {
   return (
@@ -45,6 +46,7 @@ export default function Home() {
         <Property />
         <Faq />
         <Contact enabled={mailConfigured() || storageConfigured()} />
+        <WhatsAppFloat />
       </main>
       <Footer />
     </>

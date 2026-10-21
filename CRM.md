@@ -18,9 +18,11 @@ Mantener copias de seguridad de `.data/` y definir una política de retención d
 
 ## Activar en Vercel
 
+Para Supabase, seguir [SUPABASE.md](SUPABASE.md): incluye la migración SQL, la conexión y la comprobación de permisos.
+
 1. Conectar una base **PostgreSQL persistente** y establecer `DATABASE_URL` con la conexión del proveedor, incluyendo SSL según sus instrucciones. SQLite se rechaza en Vercel: su disco no es persistente.
 2. Configurar `CRM_ADMIN_EMAIL`, `CRM_PASSWORD_HASH` y `CRM_SESSION_SECRET` como variables privadas del servidor en Vercel. Se pueden copiar desde `.env.local` al panel seguro de Vercel. No usar el prefijo `NEXT_PUBLIC_` ni publicar estos valores en GitHub o el chat.
-3. La cuenta de conexión debe poder crear tablas e índices: se inicializan en el primer acceso. Configurar backups en el proveedor.
+3. Aplicar la migración SQL antes del primer acceso. El servidor verifica las tablas existentes, sin crearlas desde las solicitudes. Configurar backups en el proveedor.
 4. Desplegar y verificar acceso, envío y persistencia. Los contadores de frecuencia del CRM se comparten en la base. Activar `TRUST_PROXY=true` únicamente si el proxy sanea y sobrescribe `X-Forwarded-For`.
 
 No se creó ni contrató una base externa automáticamente. Sin credenciales no se verificó PostgreSQL remoto. La persistencia local sí tiene pruebas SQLite.

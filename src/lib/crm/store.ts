@@ -46,9 +46,13 @@ async function connection() {
         const { Pool } = await import("pg");
         state.postgres = new Pool({
           connectionString: process.env.DATABASE_URL,
-          max: 3,
+          max: 1,
           connectionTimeoutMillis: 8000,
           idleTimeoutMillis: 10000,
+          allowExitOnIdle: true,
+        });
+        state.postgres.on("error", () => {
+          /* An idle connection error is retried on the next request. */
         });
       } else {
         const { DatabaseSync } = await import("node:sqlite");
@@ -83,6 +87,15 @@ export async function initializeStore() {
   const state = await connection();
   if (!state.ready)
     state.ready = (async () => {
+      if (state.postgres) {
+        // Production schema is applied explicitly with the Supabase migration.
+        // Never create public tables without their RLS and grants from a request.
+        await run(
+          "SELECT id,name,email,phone,building,reason,message,status,notes,created_at,notification FROM public.crm_inquiries LIMIT 0",
+        );
+        await run("SELECT key,count,reset_at FROM public.crm_limits LIMIT 0");
+        return;
+      }
       await run(
         `CREATE TABLE IF NOT EXISTS crm_inquiries (id TEXT PRIMARY KEY,name TEXT NOT NULL,email TEXT NOT NULL,phone TEXT NOT NULL,building TEXT NOT NULL,reason TEXT NOT NULL,message TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'new',notes TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL,notification TEXT NOT NULL DEFAULT 'unconfigured')`,
       );

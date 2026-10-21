@@ -13,6 +13,35 @@ const report = { sizes: [], interactions: [], accessibility: [] };
 await page.goto("http://127.0.0.1:3000");
 await page.waitForLoadState("networkidle");
 await page.evaluate(() => document.fonts.ready);
+const whatsapp = page.getByRole("link", {
+  name: "Abrir WhatsApp para consultar por tu consorcio",
+});
+await whatsapp.waitFor({ state: "visible" });
+const whatsappHref = await whatsapp.getAttribute("href");
+if (!whatsappHref?.startsWith("https://wa.me/5493515154142?text="))
+  throw new Error("Wrong WhatsApp recipient");
+if (
+  new URL(whatsappHref).searchParams.get("text") !==
+  "Hola, quisiera consultar por la administración de mi consorcio."
+)
+  throw new Error("WhatsApp message missing");
+// Intercept only in this browser test: no external request or message is sent.
+await context.route("https://wa.me/**", (route) =>
+  route.fulfill({
+    contentType: "text/html",
+    body: "WhatsApp handoff verified locally",
+  }),
+);
+const popupPromise = context.waitForEvent("page");
+await whatsapp.click();
+const popup = await popupPromise;
+await popup.waitForLoadState();
+if (popup.url() !== whatsappHref) throw new Error("WhatsApp handoff failed");
+await popup.close();
+await context.unroute("https://wa.me/**");
+report.interactions.push(
+  "Floating WhatsApp opens the confirmed number and a prefilled message, without sending it",
+);
 if ((await page.locator("main img").count()) !== 1)
   throw new Error("Professional work image missing");
 report.metadata = await page.evaluate(() => ({
@@ -223,6 +252,8 @@ report.interactions.push("Mobile menu, Escape focus return, anchor navigation");
 await page.waitForFunction(
   () => document.getElementById("contacto").getBoundingClientRect().top < 150,
 );
+await whatsapp.waitFor({ state: "hidden" });
+report.interactions.push("WhatsApp bubble does not cover the contact form");
 await page.waitForFunction(() =>
   document
     .getAnimations()

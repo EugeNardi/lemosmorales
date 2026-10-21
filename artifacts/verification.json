@@ -32,10 +32,12 @@
     }
   ],
   "interactions": [
+    "Floating WhatsApp opens the confirmed number and a prefilled message, without sending it",
     "Client validation, property selection with data preservation, absent SMTP configuration and retry",
     "Browser-only provider failure/success fixtures; data preservation and double-submit lock",
     "FAQ opens with click and closes with keyboard",
-    "Mobile menu, Escape focus return, anchor navigation"
+    "Mobile menu, Escape focus return, anchor navigation",
+    "WhatsApp bubble does not cover the contact form"
   ],
   "accessibility": [
     {

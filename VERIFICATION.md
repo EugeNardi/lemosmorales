@@ -1,5 +1,12 @@
 # Verificación de la entrega
 
+## Preparación Supabase y globo de WhatsApp
+
+- Migración SQL explícita con tablas, restricciones, índices, RLS y revocación de permisos a los roles cliente. Verificada con PostgreSQL local embebido (PGlite): aplicación repetible sin perder datos, denegación a `anon`/`authenticated` y bloqueo por RLS incluso ante una concesión accidental de lectura.
+- Runtime PostgreSQL preparado para usar el esquema migrado y una conexión por instancia; no crea tablas durante las solicitudes. Scripts `db:migrate` y `db:check`, variables y guía en SUPABASE.md. La conexión real a Supabase sigue pendiente de credenciales.
+- Globo flotante de WhatsApp con mensaje codificado y número confirmado. La prueba de navegador intercepta el destino: comprueba apertura y texto sin efectuar solicitudes ni enviar mensajes externos. Se oculta al llegar al contacto para evitar tapar el formulario.
+- Ocho pruebas aprobadas, lint sin errores, tipos y build aprobados. Axe no detectó infracciones en escritorio/móvil; sin desbordamientos entre 320 y 1440 px. Capturas actualizadas en artifacts/.
+
 ## Actualización de contacto y CRM — 21 de octubre de 2026
 
 - Teléfono, WhatsApp con ícono y correo público confirmados incorporados en contacto y pie de página.

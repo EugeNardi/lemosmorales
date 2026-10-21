@@ -4,6 +4,8 @@ Landing institucional y CRM privado para administración de consorcios. Next.js 
 
 ## Ejecutar
 
+Para conectar la base de Supabase, ver [SUPABASE.md](SUPABASE.md). La migración está lista en `supabase/migrations/202610210001_crm.sql`; `npm run db:check` verifica la conexión y los permisos cuando esté configurada.
+
 Requiere Node.js 24.x (verificado con 24.13.0) y npm.
 
 ```sh

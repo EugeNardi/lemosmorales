@@ -77,7 +77,9 @@ try {
     .fill("Consulta de prueba local para verificar el CRM.");
   await form.waitForTimeout(2100); // Exercise the actual two-second anti-spam requirement.
   await form.getByRole("button", { name: "Enviar consulta" }).click();
-  await expect(form.getByRole("status")).toContainText("Recibimos tu consulta");
+  await expect(form.getByRole("status")).toContainText(
+    "Tu consulta fue enviada con éxito",
+  );
   await page.reload();
   await page.getByRole("link").filter({ hasText: marker }).click();
   await expect(page.getByRole("heading", { name: marker })).toBeVisible();

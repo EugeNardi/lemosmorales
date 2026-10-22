@@ -709,6 +709,12 @@ details > p {
 }
 .form-status.success {
   color: var(--green);
+  background: var(--ivory);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 600;
 }
 .footer {
   background: var(--green);

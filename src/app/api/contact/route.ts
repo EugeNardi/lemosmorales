@@ -128,7 +128,10 @@ export async function POST(request: Request) {
         /* Do not duplicate an accepted inquiry. */
       }
     }
-    return reply("Recibimos tu consulta. Gracias por escribirnos.", 200);
+    return reply(
+      "Tu consulta fue enviada con éxito. Gracias por escribirnos.",
+      200,
+    );
   }
   if (!mailConfigured())
     return reply(
@@ -137,7 +140,10 @@ export async function POST(request: Request) {
     );
   try {
     await deliver(data, createMailTransport());
-    return reply("Recibimos tu consulta. Gracias por escribirnos.", 200);
+    return reply(
+      "Tu consulta fue enviada con éxito. Gracias por escribirnos.",
+      200,
+    );
   } catch {
     return reply(
       "No pudimos enviar tu consulta. Conservamos lo que escribiste para que puedas reintentar.",

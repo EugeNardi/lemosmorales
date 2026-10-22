@@ -24,7 +24,7 @@ export default async function Inbox({
       status,
       page: String(value),
     });
-    return `/crm?${params}`;
+    return `/consultas?${params}`;
   }
   return (
     <>
@@ -40,7 +40,7 @@ export default async function Inbox({
       </div>
       <div className="crm-stats">
         {statuses.map((item) => (
-          <Link key={item} href={`/crm?status=${item}`}>
+          <Link key={item} href={`/consultas?status=${item}`}>
             <span>{labels[item]}</span>
             <strong>
               {Number(
@@ -76,7 +76,7 @@ export default async function Inbox({
           Filtrar <span aria-hidden="true">↗</span>
         </button>
         {(search || status) && (
-          <Link href="/crm" className="text-link">
+          <Link href="/consultas" className="text-link">
             Limpiar
           </Link>
         )}
@@ -105,7 +105,7 @@ export default async function Inbox({
         ) : (
           data.rows.map((item) => (
             <Link
-              href={`/crm/${item.id}`}
+              href={`/consultas/${item.id}`}
               className="crm-inquiry"
               key={item.id}
             >

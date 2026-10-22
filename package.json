@@ -13,11 +13,14 @@
     "lint": "eslint .",
     "test": "tsx --test tests/*.test.ts",
     "db:migrate": "node scripts/database.mjs migrate",
-    "db:check": "node scripts/database.mjs check"
+    "db:check": "node scripts/database.mjs check",
+    "supabase:check": "node scripts/supabase-check.mjs"
   },
   "dependencies": {
     "@fontsource/dm-serif-display": "^5.2.0",
     "@fontsource/manrope": "^5.2.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
     "next": "16.4.0",
     "nodemailer": "^10.1.1",
     "pg": "^8.23.1",

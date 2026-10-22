@@ -4,7 +4,7 @@ import { authConfigured } from "@/lib/crm/security";
 import { storageConfigured } from "@/lib/crm/store";
 import { LoginForm } from "@/components/crm/login-form";
 export default async function LoginPage() {
-  if (await authenticated()) redirect("/crm");
+  if (await authenticated()) redirect("/consultas");
   return (
     <div className="crm-login">
       <div>

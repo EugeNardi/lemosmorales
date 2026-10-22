@@ -38,3 +38,9 @@ Actualización visual: se retiraron las fotografías y se recompuso el hero y No
 No se midieron Lighthouse, Core Web Vitals de campo ni entrega SMTP real. El navegador integrado falló al iniciar por un error del entorno; se utilizó Chromium local como alternativa. Detalle reproducible de la última revisión en `artifacts/verification.json`.
 
 Falta para publicar: confirmación de marca, contactos reales, cobertura, dominio, SMTP y verificación autorizada de recepción. Ver [README.md](README.md).
+
+# Integración Supabase Auth — 22/10/2026
+
+Build de producción, tipos y nueve pruebas automatizadas aprobados. La prueba PostgreSQL aislada verifica envío anónimo limitado, RLS, bloqueo de otros usuarios, acceso del administrador, edición restringida y migración repetible sin pérdida de consultas. Chromium verifica `/consultas`, redirección de `/crm`, bloqueo del detalle privado, reflow móvil y Axe sin infracciones. Evidencia en `artifacts/consultas-verification.json` y `consultas-login.png`.
+
+El endpoint real de Supabase Auth respondió a la configuración suministrada. `npm run supabase:check` detectó que falta ejecutar `supabase/setup.sql`. El usuario indicó que aún no creó su cuenta Auth. No se probaron login ni persistencia en el proyecto remoto; no se crearon usuarios ni se enviaron emails reales. La activación requiere los pasos de `SUPABASE.md` y las variables correspondientes en Vercel.

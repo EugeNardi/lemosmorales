@@ -5,6 +5,7 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import { promisify } from "node:util";
+import { supabaseCrm, supabaseConfigured } from "@/utils/supabase/config";
 const scrypt = promisify(scryptCallback);
 export async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
@@ -24,6 +25,7 @@ function sessionKey() {
   return key;
 }
 export function authConfigured() {
+  if (supabaseCrm()) return supabaseConfigured();
   return Boolean(
     process.env.CRM_ADMIN_EMAIL &&
     process.env.CRM_PASSWORD_HASH &&

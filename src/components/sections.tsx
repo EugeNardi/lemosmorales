@@ -292,7 +292,7 @@ export function Footer() {
             derechos reservados.
           </span>
           <div className="footer-utility">
-            <Link href="/crm">Acceso al equipo</Link>
+            <Link href="/consultas">Acceso al equipo</Link>
             <a href="#inicio">Volver al inicio ↑</a>
           </div>
         </div>

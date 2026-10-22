@@ -4,7 +4,7 @@ Landing institucional y CRM privado para administración de consorcios. Next.js 
 
 ## Ejecutar
 
-Para conectar la base de Supabase, ver [SUPABASE.md](SUPABASE.md). La migración está lista en `supabase/migrations/202610210001_crm.sql`; `npm run db:check` verifica la conexión y los permisos cuando esté configurada.
+Para conectar Supabase Auth y el CRM en `/consultas`, seguir [SUPABASE.md](SUPABASE.md). Crear primero el usuario confirmado y ejecutar `supabase/setup.sql`; `npm run supabase:check` verifica la conexión y la configuración. Este modo usa `CRM_STORAGE=supabase`, URL y clave publicable, sin conexión PostgreSQL directa.
 
 Requiere Node.js 24.x (verificado con 24.13.0) y npm.
 
@@ -38,7 +38,7 @@ Con el CRM configurado, el formulario guarda primero la consulta en la base de d
 
 Cliente y servidor validan campos y límites. El endpoint acepta un máximo de 14 KB, email de hasta 254 caracteres y mensaje de hasta 4000. Incluye honeypot, tiempo mínimo de dos segundos, control de origen y bloqueo de doble envío en cliente. El correo usa texto plano, por lo que no interpreta HTML del visitante.
 
-El límite de contacto es de cinco intentos cada diez minutos. Con CRM, los contadores se guardan en la base y se comparten entre Functions; sin CRM son locales a cada proceso. El acceso privado admite ocho intentos cada quince minutos. `TRUST_PROXY=false` usa un límite global conservador; activar `true` solo detrás de un proxy que sobrescriba y sanee `X-Forwarded-For`. Se guardan hashes temporales, no IP en claro. En modo SMTP sin CRM y con múltiples instancias, agregar un límite en el firewall.
+El endpoint limita a cinco intentos cada diez minutos por identidad. En Supabase, la función SQL añade contadores compartidos de tres consultas por email y cien totales cada diez minutos; Auth gestiona los límites de inicio de sesión. El modo local por hash admite ocho intentos de acceso cada quince minutos. `TRUST_PROXY=false` usa un límite global conservador; activar `true` solo detrás de un proxy que sobrescriba y sanee `X-Forwarded-For`.
 
 `npm test` levanta un servidor SMTP efímero en loopback y usa dominios `.test`: prueba aceptación y rechazo, incluido el endpoint, sin enviar correos reales. No existe un modo de éxito ficticio en la landing. Para verificar el canal real, configurar el proveedor y autorizar por separado una consulta de prueba, comprobando recepción, Reply-To, SPF/DKIM y carpeta de spam.
 
@@ -59,7 +59,7 @@ El repositorio está preparado para importarse desde `EugeNardi/lemosmorales`. E
 
 Para la primera revisión no se requieren credenciales SMTP ni variables de entorno: se verá el aviso de envío deshabilitado y se mantendrá `noindex`. Después del primer despliegue, usar la URL asignada por Vercel en `NEXT_PUBLIC_SITE_URL` y volver a desplegar. Mantener `SITE_INDEXABLE=false` hasta aprobar la publicación definitiva.
 
-Para habilitar el CRM, cargar `DATABASE_URL`, `CRM_ADMIN_EMAIL`, `CRM_PASSWORD_HASH` y `CRM_SESSION_SECRET` en las variables del servidor de Vercel. Para recibir también notificaciones, completar SMTP. Ver [CRM.md](CRM.md). No copiar `.env.local` a GitHub. Los siguientes pushes a `main` se desplegarán automáticamente una vez conectado el repositorio con Vercel.
+Para habilitar el CRM con Supabase Auth, cargar `CRM_STORAGE=supabase`, `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en Vercel y hacer Redeploy. Crear el usuario confirmado y ejecutar el SQL según [SUPABASE.md](SUPABASE.md). Para recibir además notificaciones completar SMTP. No copiar `.env.local` a GitHub. Los pushes a `main` se desplegarán automáticamente una vez conectado con Vercel.
 
 ## Diseño y revisión
 

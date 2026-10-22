@@ -4,6 +4,7 @@ import { dirname, resolve } from "node:path";
 import type { ContactData } from "../validation";
 import type { DatabaseSync } from "node:sqlite";
 import type { Pool } from "pg";
+import { supabaseConfigured, supabaseCrm } from "@/utils/supabase/config";
 
 export const statuses = ["new", "contacted", "closed"] as const;
 export type Status = (typeof statuses)[number];
@@ -31,6 +32,7 @@ const globalStore = globalThis as typeof globalThis & {
 };
 
 export function storageConfigured() {
+  if (supabaseCrm()) return supabaseConfigured();
   return Boolean(
     process.env.DATABASE_URL ||
     (!process.env.VERCEL && process.env.CRM_STORAGE === "sqlite"),
@@ -112,6 +114,8 @@ export async function initializeStore() {
   await state.ready;
 }
 export async function saveInquiry(data: ContactData) {
+  if (supabaseCrm())
+    return (await import("./supabase-store")).submitInquiry(data);
   await initializeStore();
   const id = randomUUID();
   await run(
@@ -130,6 +134,8 @@ export async function saveInquiry(data: ContactData) {
   return id;
 }
 export async function setNotification(id: string, state: "sent" | "failed") {
+  if (supabaseCrm())
+    return (await import("./supabase-store")).trackNotification(id, state);
   await initializeStore();
   await run("UPDATE crm_inquiries SET notification=$1 WHERE id=$2", [
     state,
@@ -141,6 +147,12 @@ export async function listInquiries({
   status = "",
   page = 1,
 }: { search?: string; status?: string; page?: number } = {}) {
+  if (supabaseCrm())
+    return (await import("./supabase-store")).queryInquiries({
+      search,
+      status,
+      page,
+    });
   await initializeStore();
   const offset = (Math.max(1, Math.min(page, 100000)) - 1) * 20;
   const params: (string | number)[] = [];
@@ -170,6 +182,7 @@ export async function listInquiries({
   return { rows, total: Number(total[0].total), counts };
 }
 export async function getInquiry(id: string) {
+  if (supabaseCrm()) return (await import("./supabase-store")).queryInquiry(id);
   await initializeStore();
   return (
     (await run<Inquiry>("SELECT * FROM crm_inquiries WHERE id=$1", [id]))[0] ||
@@ -177,6 +190,8 @@ export async function getInquiry(id: string) {
   );
 }
 export async function updateInquiry(id: string, status: Status, notes: string) {
+  if (supabaseCrm())
+    return (await import("./supabase-store")).changeInquiry(id, status, notes);
   await initializeStore();
   await run("UPDATE crm_inquiries SET status=$1,notes=$2 WHERE id=$3", [
     status,
@@ -185,6 +200,8 @@ export async function updateInquiry(id: string, status: Status, notes: string) {
   ]);
 }
 export async function removeInquiry(id: string) {
+  if (supabaseCrm())
+    return (await import("./supabase-store")).deleteStoredInquiry(id);
   await initializeStore();
   await run("DELETE FROM crm_inquiries WHERE id=$1", [id]);
 }

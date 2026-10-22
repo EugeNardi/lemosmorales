@@ -1,8 +1,10 @@
-// Run only against local development. Credentials are read from process env, never printed.
+﻿// Run only against local development. Credentials are read from process env, never printed.
 import { chromium, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 process.loadEnvFile(".env.local");
+if (process.env.CRM_STORAGE !== "sqlite")
+  throw new Error("This test requires a local SQLite server, not Supabase.");
 if (!process.env.CRM_E2E_PASSWORD)
   throw new Error("Set CRM_E2E_PASSWORD locally before running the CRM check.");
 if (process.env.SMTP_PASS)
@@ -24,15 +26,15 @@ page.on("console", (message) => {
 });
 await mkdir("artifacts", { recursive: true });
 try {
-  await page.goto("http://127.0.0.1:3000/crm");
-  await expect(page).toHaveURL(/\/crm\/login$/);
+  await page.goto("http://127.0.0.1:3000/consultas");
+  await expect(page).toHaveURL(/\/consultas$/);
   await page.waitForLoadState("networkidle");
   await expect(
     page.getByRole("heading", { name: "Consultas recibidas." }),
   ).toHaveCount(0);
   await page.getByLabel("Correo de acceso").fill(process.env.CRM_ADMIN_EMAIL);
   await page
-    .getByLabel("Contraseña", { exact: true })
+    .getByLabel("ContraseÃ±a", { exact: true })
     .fill("incorrect-test-password");
   await page.getByRole("button", { name: "Ingresar al CRM" }).click();
   await expect(page.getByRole("status")).toContainText("no son correctos");
@@ -40,12 +42,12 @@ try {
     "Unauthenticated inbox redirects; wrong password rejected",
   );
   await page.screenshot({
-    path: "artifacts/crm-login.png",
+    path: "artifacts/consultas-login.png",
     fullPage: true,
     caret: "initial",
   });
   await page
-    .getByLabel("Contraseña", { exact: true })
+    .getByLabel("ContraseÃ±a", { exact: true })
     .fill(process.env.CRM_E2E_PASSWORD);
   await page.getByRole("button", { name: "Ingresar al CRM" }).click();
   await expect(
@@ -54,7 +56,11 @@ try {
   const cookie = (await context.cookies()).find(
     (c) => c.name === "lm_crm_session",
   );
-  if (!cookie?.httpOnly || cookie.sameSite !== "Lax" || cookie.path !== "/crm")
+  if (
+    !cookie?.httpOnly ||
+    cookie.sameSite !== "Lax" ||
+    cookie.path !== "/consultas"
+  )
     throw new Error("Session cookie flags missing");
   const visitor = await browser.newContext();
   const form = await visitor.newPage();
@@ -77,22 +83,22 @@ try {
   await expect(page.getByRole("heading", { name: marker })).toBeVisible();
   const inquiryPath = new URL(page.url()).pathname;
   await form.goto("http://127.0.0.1:3000" + inquiryPath);
-  await expect(form).toHaveURL(/\/crm\/login$/);
+  await expect(form).toHaveURL(/\/consultas$/);
   report.checks.push(
     "Real local form submission persisted and visible only after login",
   );
   await page.getByLabel("Estado de la consulta").selectOption("contacted");
   await page
     .getByLabel("Notas internas")
-    .fill("Seguimiento de prueba: coordinar una conversación.");
+    .fill("Seguimiento de prueba: coordinar una conversaciÃ³n.");
   await page.getByRole("button", { name: "Guardar seguimiento" }).click();
   await expect(page.getByRole("status")).toContainText("Seguimiento guardado");
   await page.reload();
   await expect(page.getByLabel("Notas internas")).toHaveValue(
-    "Seguimiento de prueba: coordinar una conversación.",
+    "Seguimiento de prueba: coordinar una conversaciÃ³n.",
   );
   await page.screenshot({
-    path: "artifacts/crm-detail.png",
+    path: "artifacts/consultas-detail.png",
     fullPage: true,
     caret: "initial",
   });
@@ -103,7 +109,7 @@ try {
     page.getByRole("link").filter({ hasText: marker }),
   ).toBeVisible();
   await page.screenshot({
-    path: "artifacts/crm-inbox.png",
+    path: "artifacts/consultas-inbox.png",
     fullPage: true,
     caret: "initial",
   });
@@ -115,7 +121,7 @@ try {
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
-    path: "artifacts/crm-mobile.png",
+    path: "artifacts/consultas-mobile.png",
     fullPage: true,
     caret: "initial",
   });
@@ -135,10 +141,10 @@ try {
   report.checks.push(
     "Status, notes, search, mobile and deletion of the test inquiry verified",
   );
-  await page.getByRole("button", { name: "Cerrar sesión" }).click();
-  await expect(page).toHaveURL(/\/crm\/login$/);
-  await page.goto("http://127.0.0.1:3000/crm");
-  await expect(page).toHaveURL(/\/crm\/login$/);
+  await page.getByRole("button", { name: "Cerrar sesiÃ³n" }).click();
+  await expect(page).toHaveURL(/\/consultas$/);
+  await page.goto("http://127.0.0.1:3000/consultas");
+  await expect(page).toHaveURL(/\/consultas$/);
   report.checks.push("Logout revokes browser access");
   report.accessibility.push({
     screen: "login",
@@ -148,7 +154,7 @@ try {
   });
   await visitor.close();
   await writeFile(
-    "artifacts/crm-verification.json",
+    "artifacts/consultas-verification.json",
     JSON.stringify(report, null, 2),
   );
   console.log(JSON.stringify(report, null, 2));
@@ -156,7 +162,7 @@ try {
     throw new Error("CRM accessibility violations");
 } catch (error) {
   await page.screenshot({
-    path: "artifacts/crm-failure.png",
+    path: "artifacts/consultas-failure.png",
     fullPage: true,
     caret: "initial",
   });

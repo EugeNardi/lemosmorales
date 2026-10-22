@@ -1,6 +1,8 @@
 import { validate } from "@/lib/validation";
 import { createMailTransport, deliver, mailConfigured } from "@/lib/mail";
 import { allowRequest } from "@/lib/rate-limit";
+import { supabaseCrm } from "@/utils/supabase/config";
+import { SubmissionError } from "@/lib/crm/supabase-store";
 import {
   storageConfigured,
   saveInquiry,
@@ -80,9 +82,11 @@ export async function POST(request: Request) {
       : "single-instance";
   let allowed: boolean;
   try {
-    allowed = storageConfigured()
-      ? await consumeLimit(`contact:${identity}`)
-      : allowRequest(identity);
+    allowed = supabaseCrm()
+      ? allowRequest(identity)
+      : storageConfigured()
+        ? await consumeLimit(`contact:${identity}`)
+        : allowRequest(identity);
   } catch {
     return reply(
       "No pudimos registrar tu consulta. Podés escribirnos por email o WhatsApp.",
@@ -98,7 +102,12 @@ export async function POST(request: Request) {
     let id: string;
     try {
       id = await saveInquiry(data);
-    } catch {
+    } catch (error) {
+      if (error instanceof SubmissionError && error.rateLimited)
+        return reply(
+          "Recibimos varios intentos. Esperá unos minutos antes de volver a enviar.",
+          429,
+        );
       return reply(
         "No pudimos registrar tu consulta. Conservamos los datos para que puedas reintentar.",
         503,

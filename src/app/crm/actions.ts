@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { authenticated, requireAdmin, sessionCookie } from "@/lib/crm/auth";
 import { authConfigured, checkPassword, makeSession } from "@/lib/crm/security";
+import { supabaseCrm } from "@/utils/supabase/config";
+import { createClient } from "@/utils/supabase/server";
 import {
   consumeLimit,
   storageConfigured,
@@ -24,6 +26,33 @@ export async function login(
   const password = String(form.get("password") || "");
   if (email.length > 254 || password.length > 256 || !password)
     return { error: "Revisá el correo y la contraseña." };
+  if (supabaseCrm()) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error || !data.user)
+        return {
+          error:
+            error?.status === 429
+              ? "Demasiados intentos. Esperá unos minutos."
+              : "El correo o la contraseña no son correctos.",
+        };
+      const access = await supabase.rpc("crm_is_admin");
+      if (access.error || access.data !== true) {
+        await supabase.auth.signOut();
+        return {
+          error:
+            "Tu usuario todavía no tiene acceso al panel. Revisá la configuración del administrador.",
+        };
+      }
+    } catch {
+      return { error: "No pudimos conectar con el acceso. Volvé a intentar." };
+    }
+    redirect("/consultas");
+  }
   try {
     const ip =
       process.env.TRUST_PROXY === "true"
@@ -43,18 +72,23 @@ export async function login(
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      path: "/crm",
+      path: "/consultas",
       maxAge: 28800,
     });
   } catch {
     return { error: "No pudimos iniciar sesión. Volvé a intentar." };
   }
-  redirect("/crm");
+  redirect("/consultas");
 }
 export async function logout() {
+  if (supabaseCrm()) {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect("/consultas");
+  }
   if (await authenticated())
-    (await cookies()).delete({ name: sessionCookie, path: "/crm" });
-  redirect("/crm/login");
+    (await cookies()).delete({ name: sessionCookie, path: "/consultas" });
+  redirect("/consultas/login");
 }
 export async function editInquiry(form: FormData) {
   await requireAdmin();
@@ -68,8 +102,8 @@ export async function editInquiry(form: FormData) {
   )
     throw new Error("Revisá los datos de seguimiento.");
   await updateInquiry(id, status as Status, notes);
-  revalidatePath("/crm");
-  redirect(`/crm/${id}?saved=1`);
+  revalidatePath("/consultas");
+  redirect(`/consultas/${id}?saved=1`);
 }
 export async function deleteInquiry(form: FormData) {
   await requireAdmin();
@@ -77,6 +111,6 @@ export async function deleteInquiry(form: FormData) {
   if (!/^[a-f0-9-]{36}$/.test(id) || form.get("confirm") !== "yes")
     throw new Error("Confirmá la eliminación.");
   await removeInquiry(id);
-  revalidatePath("/crm");
-  redirect("/crm");
+  revalidatePath("/consultas");
+  redirect("/consultas");
 }

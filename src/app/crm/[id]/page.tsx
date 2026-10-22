@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/crm/auth";
 import { getInquiry, statuses, type Status } from "@/lib/crm/store";
 import { editInquiry, deleteInquiry } from "../actions";
+import { supabaseCrm } from "@/utils/supabase/config";
 const labels: Record<Status, string> = {
   new: "Nueva",
   contacted: "En seguimiento",
@@ -23,7 +24,7 @@ export default async function InquiryPage({
   const { saved } = await searchParams;
   return (
     <>
-      <Link className="text-link" href="/crm">
+      <Link className="text-link" href="/consultas">
         ← Volver a la bandeja
       </Link>
       <div className="crm-title-row">
@@ -58,7 +59,15 @@ export default async function InquiryPage({
             </div>
             <div>
               <dt>Teléfono</dt>
-              <dd>{item.phone || "No indicado"}</dd>
+              <dd>
+                {item.phone && /^\+?[\d ()-]{7,40}$/.test(item.phone) ? (
+                  <a href={`tel:${item.phone.replace(/[^\d+]/g, "")}`}>
+                    {item.phone}
+                  </a>
+                ) : (
+                  item.phone || "No indicado"
+                )}
+              </dd>
             </div>
             <div>
               <dt>Consorcio y localidad</dt>
@@ -75,11 +84,13 @@ export default async function InquiryPage({
           </a>
           <p className="crm-mail-note">
             Notificación al correo:{" "}
-            {item.notification === "sent"
-              ? "aceptada por el proveedor"
-              : item.notification === "failed"
-                ? "no enviada; la consulta está guardada"
-                : "sin configurar"}
+            {supabaseCrm() && !process.env.SUPABASE_SECRET_KEY
+              ? "sin seguimiento automático en este canal"
+              : item.notification === "sent"
+                ? "aceptada por el proveedor"
+                : item.notification === "failed"
+                  ? "no enviada; la consulta está guardada"
+                  : "sin configurar"}
             . Responder abre tu aplicación de correo.
           </p>
         </article>
